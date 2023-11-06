@@ -5,5 +5,9 @@
 def drawnCards(numCards,uno_deck):
     cardsDrawn = []
     for i in range(numCards):
-        cardsDrawn.append(uno_deck.pop(i))
+        if uno_deck:
+            cardsDrawn.append(uno_deck.pop())
+        else:
+            print("The Deck is Empty")
+            break 
     return cardsDrawn
