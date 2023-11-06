@@ -1,11 +1,13 @@
 # A function for seeing the cards in the player's Hand
-# Parameters :- player_Number , player_Card_List
+# Parameters :- player_Number(which player) , player's_Card_List
 # Return :- None
 
-def showHand(player,playerHand):
-    print("Player {}".format(player+1))
-    print("Player have the cards :-")
+def showHand(player_number, player_hand):
+    print(f"Player {player_number + 1}'s Hand:")
+    print("Player has the following cards:")
     print("-------------------")
-    for card in playerHand:
+    
+    for card in player_hand:
         print(card)
+    
     print("")
