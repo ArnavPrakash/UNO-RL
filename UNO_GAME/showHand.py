@@ -6,8 +6,9 @@ def showHand(player_number, player_hand):
     print(f"Player {player_number + 1}'s Hand:")
     print("Player has the following cards:")
     print("-------------------")
-    
+    y=1
     for card in player_hand:
-        print(card)
+        print("{}) {}".format(y,card))
+        y+=1
     
     print("")
