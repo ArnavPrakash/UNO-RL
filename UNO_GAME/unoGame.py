@@ -1,8 +1,8 @@
-from BuildDeck import buildDeck
-from ShuffelDeck import shuffelDeck
-from DrawCards import drawnCards
-from ShowHand import showHand
-
+from buildDeck import buildDeck
+from shuffelDeck import shuffelDeck
+from drawCard import drawnCards
+from showHand import showHand
+from canPlay import canPlay
 
 # Creating Deck
 uno_deck = buildDeck()
@@ -30,4 +30,6 @@ discardCards.append(uno_deck.pop(0))
 while playing:
     showHand(playerTurn, players[playerTurn])
     print("Card on top of discard pile : {}".format(discardCards[-1]))
+    canPlay(discardCards[-1],players[playerTurn])
+    
     
