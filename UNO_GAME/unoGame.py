@@ -67,6 +67,7 @@ while playing:
                 newColor = int(
                     input("What color would you like to choose,you entered invalid index ?"))
             currentColor = colors[newColor-1]
+            discardCards[-1] = "wild" + currentColor
         if cardVal == "Reverse":
             playDirection = playDirection * -1
         elif cardVal == "Skip":
