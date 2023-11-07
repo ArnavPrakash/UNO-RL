@@ -17,7 +17,7 @@ colors = ["Red", "Green", "Yellow", "Blue"]
 numPlayers = int(input("How many Players ?"))
 while numPlayers < 2 or numPlayers > 4:
     numPlayers = int(input("Enter a number between 2-4. How many Players ?"))
-# # Distributing the 7 cards to each player
+ # Distributing the 7 cards to each player
 for player in range(numPlayers):
     players.append(drawnCards(7, uno_deck))
 
@@ -42,9 +42,12 @@ while playing:
     print("Card on top of discard pile : {}".format(discardCards[-1]))
     if (canPlay(currentColor, cardVal, players[playerTurn])):
         cardChoosen = int(input("Enter the index of card :"))
+        while(cardChoosen<1 or cardChoosen>len(players[playerTurn])):
+            print("Please enter vaild index")
+            cardChoosen = int(input("Enter the index of card :"))
+
         while not canPlay(currentColor, cardVal, [players[playerTurn][cardChoosen-1]]):
-            cardChoosen = int(
-                input("Not a valid card,Enter the index of card :"))
+            cardChoosen = int(input("Not a valid card,Enter the index of card :"))
         print("You played {}".format(players[playerTurn][cardChoosen-1]))
         discardCards.append(players[playerTurn].pop(cardChoosen-1))
 
