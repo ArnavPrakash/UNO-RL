@@ -1,109 +1,164 @@
 import random
 
-class UnoDeck:
+class Card:
+    def __init__(self, color, value):
+        self.color = color
+        self.value = value
+
+    def __str__(self):
+        return f"{self.color} {self.value}"
+
+class Deck:
     def __init__(self):
+        self.cards = []
+        self.drawnCards = []
         self.colors = ["Red", "Green", "Yellow", "Blue"]
-        self.values = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Reverse", "Skip", "Draw Two", "Wild", "Wild Draw Four"]
-        self.deck = [(color, value) for color in self.colors for value in self.values]
+        self.values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "Draw Two", "Skip", "Reverse"]
+        self.wilds = ["Wild", "Wild Draw Four"]
+        self.build_deck()
+
+    def build_deck(self):
+        for color in self.colors:
+            for value in self.values:
+                if value != 0:
+                    self.cards.append(Card(color, value))
+                    self.cards.append(Card(color, value))
+        for _ in range(4):
+            self.cards.append(Card(self.wilds[0], "Wild"))
+            self.cards.append(Card(self.wilds[1], "Wild Draw Four"))
 
     def shuffle(self):
-        random.shuffle(self.deck)
+        random.shuffle(self.cards)
 
     def draw_card(self):
-        return self.deck.pop(0)
+        if self.cards:
+            drawn_card = self.cards.pop()
+            self.drawnCards.append(drawn_card)
+            return drawn_card
+        else:
+            print("The Deck is Empty")
+            return None
 
-class UnoPlayer:
+class Player:
     def __init__(self, name):
         self.name = name
         self.hand = []
 
+    def show_hand(self):
+        print(f"{self.name}'s Hand:")
+        print("Player has the following cards:")
+        print("-------------------")
+        for i, card in enumerate(self.hand, 1):
+            print(f"{i}) {card}")
+        print("")
+
     def draw_cards(self, deck, num_cards):
         for _ in range(num_cards):
-            self.hand.append(deck.draw_card())
+            card = deck.draw_card()
+            if card:
+                self.hand.append(card)
 
     def play_card(self, card_index, discard_pile):
-        card = self.hand.pop(card_index)
-        discard_pile.append(card)
-        return card
+        if 0 <= card_index - 1 < len(self.hand):
+            card = self.hand.pop(card_index - 1)
+            discard_pile.append(card)
+            return card
+        else:
+            print("Invalid card index.")
+            return None
 
 class UnoGame:
-    def __init__(self, num_players):
-        self.num_players = num_players
-        self.deck = UnoDeck()
-        self.deck.shuffle()
-        self.players = [UnoPlayer(f"Player {i+1}") for i in range(num_players)]
-        self.discard_pile = [self.deck.draw_card()]
-        self.current_player = 0
-        self.play_direction = 1
+    def __init__(self):
+        self.deck = Deck()
+        self.players = []
+        self.discard_pile = []
 
+    def add_player(self, name):
+        player = Player(name)
+        self.players.append(player)
+
+    def start_game(self):
+        self.deck.shuffle()
         for player in self.players:
             player.draw_cards(self.deck, 7)
-            
-    def change_direction(self):
-        self.play_direction *= -1
-
-    def skip_player(self):
-        self.current_player += self.play_direction
-        if self.current_player >= self.num_players:
-            self.current_player = 0
-        elif self.current_player < 0:
-            self.current_player = self.num_players - 1
-
-    def draw_cards(self, num_cards, player_index):
-        for _ in range(num_cards):
-            self.players[player_index].draw_cards(self.deck, 1)
+        self.discard_pile.append(self.deck.draw_card())
+        self.play_game()
 
     def play_game(self):
-        current_color = self.discard_pile[-1][0]
-        card_value = self.discard_pile[-1][1]
+        player_turn = 0
+        play_direction = 1
+        current_color = self.discard_pile[-1].color
+        card_val = self.discard_pile[-1].value if self.discard_pile[-1].value else "Any"
 
         while True:
-            player = self.players[self.current_player]
-            print(f"{player.name}'s turn")
-            print(f"Current Card: {self.discard_pile[-1]}")
-            print(f"Your Hand: {player.hand}")
+            player = self.players[player_turn]
+            print(f"{player.name}'s turn:")
+            print("Card on top of discard pile:", self.discard_pile[-1])
+            player_hand = player.hand
+            player.show_hand()
 
-            valid_cards = [(i, card) for i, card in enumerate(player.hand) if card[0] == current_color or card[1] == card_value or card[0] == 'Wild']
-            
-            if valid_cards:
+            if UnoGame.can_play(current_color, card_val, player_hand):
                 card_index = int(input("Enter the index of the card to play: "))
-                while card_index < 0 or card_index >= len(valid_cards):
-                    card_index = int(input("Invalid index. Enter the index of the card to play: "))
+                played_card = player.play_card(card_index, self.discard_pile)
 
-                played_card = player.play_card(valid_cards[card_index][0], self.discard_pile)
-                current_color, card_value = played_card[0], played_card[1]
+                if played_card:
+                    if played_card.color == "Wild":
+                        new_color = int(input("Choose a color (1-4): "))
+                        current_color = self.deck.colors[new_color - 1]
+                        self.discard_pile[-1].color = current_color
+                    card_val = played_card.value
+                    if card_val == "Reverse":
+                        play_direction *= -1
+                    elif card_val == "Skip":
+                        player_turn += play_direction
+                    elif card_val == "Draw Two":
+                        player_draw = player_turn + play_direction
+                        self.players[player_draw].draw_cards(self.deck, 2)
+                    # Correct the card type to "Draw Four"
+                    elif card_val == "Draw Four":
+                        player_draw = player_turn + play_direction
+                        if player_draw >= len(self.players):
+                            player_draw = 0
+                        self.players[player_draw].draw_cards(self.deck, 4)
 
-                if card_value == "Wild":
-                    new_color = int(input("Choose a new color (1-4): "))
-                    current_color = self.deck.colors[new_color - 1]
+                        # Prompt the player to choose a color for "Wild Draw Four"
+                        new_color = int(input("Choose a color (1-4): "))
+                        current_color = self.deck.colors[new_color - 1]
+                        self.discard_pile[-1].color = current_color
 
-                if card_value == "Reverse":
-                    self.change_direction()
-                elif card_value == "Skip":
-                    self.skip_player()
-                elif card_value == "Draw Two":
-                    self.draw_cards(2, self.current_player)
-                elif card_value == "Draw Four":
-                    self.draw_cards(4, self.current_player)
-
+                if not player.hand:
+                    print(f"{player.name} has won!")
+                    break
             else:
-                print("You can't play. Drawing a card from the deck.")
-                self.draw_cards(1, self.current_player)
+                print("You can't play, you have to draw a card.")
+                player.draw_cards(self.deck, 1)
 
-            if len(player.hand) == 0:
-                print(f"{player.name} has won!")
-                break
+            player_turn += play_direction
+            if player_turn >= len(self.players):
+                player_turn = 0
 
-            self.current_player += self.play_direction
-            if self.current_player >= self.num_players:
-                self.current_player = 0
-            elif self.current_player < 0:
-                self.current_player = self.num_players - 1
+    @staticmethod
+    def can_play(current_color, card_val, player_hand):
+        for card in player_hand:
+            if "Wild" in card.color:
+                return True
+            elif current_color == card.color:
+                return True
+            elif card_val == card.value:
+                return True
+        return False
+
+    def show_results(self):
+        print("Game Over")
 
 if __name__ == "__main__":
-    num_players = int(input("How many players? "))
+    uno_game = UnoGame()
+    num_players = int(input("How many players (2-4)? "))
     while num_players < 2 or num_players > 4:
-        num_players = int(input("Enter a number between 2-4. How many players? "))
-    
-    game = UnoGame(num_players)
-    game.play_game()
+        num_players = int(input("Enter a number between 2 and 4: "))
+    for i in range(num_players):
+        player_name = input(f"Enter the name for Player {i + 1}: ")
+        uno_game.add_player(player_name)
+
+    uno_game.start_game()
+    uno_game.show_results()
