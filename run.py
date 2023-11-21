@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 
-from src.game import tournament
+from UNO_GAME.game import tournament
 import config as conf
 
 def main():
