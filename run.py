@@ -25,11 +25,11 @@ def main():
     q_vals = pd.DataFrame(run[2].q)
     q_vals.index.rename("id", inplace=True)
 
-    if not os.path.exists("assets"):
-        os.makedirs("assets")
+    if not os.path.exists("data"):
+        os.makedirs("data")
 
-    q_vals.to_csv("assets/q-values.csv", index=True)
-    result.to_csv("assets/results.csv", index=False) 
+    q_vals.to_csv("data/q-values.csv", index=True)
+    result.to_csv("data/results.csv", index=False) 
     
 
 if __name__ == "__main__":
